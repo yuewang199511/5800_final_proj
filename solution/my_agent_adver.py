@@ -90,6 +90,7 @@ def neighbors(row, col, size):
 def opponent(color):
     return 'B' if color == 'R' else 'R'
 
+
 def bfs_01(board, color, size, from_end=False, use_bridges=True):
     """
     Special BFS treating 0 cost cells by queueing on the front and 1 cost cells on the back.
@@ -163,6 +164,14 @@ class HeuristicEvaluator:
     def register(self, heuristic: Heuristic, weight: float = 1.0):
         self.heuristics.append((heuristic, weight))
         return self
+    
+    def score_cell(self, board, cell, color, size):
+        for h, _ in self.heuristics:
+            h.prepare(board, color, size)
+        return sum(
+            weight * h.score(board, cell, color, size)
+            for h, weight in self.heuristics
+        )
 
     def best_move(self, board, color, size):
         """
@@ -275,22 +284,21 @@ def choose_move(size, my_color, board, evaluator):
     color = 'R' if my_color == 'RED' else 'B'
     return evaluator.best_move(board, color, size)
 
-def should_swap(board, color, size, evaluator):
-    # include one extra pass of the whole set of heuristics
-    # only BLUE can swap, only on turn 2
+def should_swap(board, my_color, size, evaluator):
+    color = 'R' if my_color == 'RED' else 'B'
     if color != 'B' or len(board) != 1:
         return False
 
     opp_cell = next(iter(board))
     r, c = opp_cell
     mirrored = (c, r)
-    # build the temp board after swap
-    swapped_board = {mirrored: 'B'}
-    for h, _ in evaluator.heuristics:
-        h.prepare(swapped_board, color, size)
+
+    # score swap first
+    swapped_board = {}
+
     swap_score = evaluator.score_cell(swapped_board, mirrored, color, size)
 
-    # best move on the real board (without swapping)
+    # score real board second — best_move calls prepare internally
     best_cell = evaluator.best_move(board, color, size)
     best_score = evaluator.score_cell(board, best_cell, color, size)
 
@@ -308,7 +316,7 @@ def main():
             line = input()
             size, my_color, board = parse_board(line)
 
-            if my_color == 'B' and should_swap(board, my_color, size, evaluator):
+            if should_swap(board, my_color, size, evaluator):
                 print("swap")
             else:
                 row, col = choose_move(size, my_color, board, evaluator)
