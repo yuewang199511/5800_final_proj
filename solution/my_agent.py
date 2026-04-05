@@ -160,14 +160,17 @@ class HeuristicEvaluator:
     def __init__(self, temperature: float = 0.1):
         self.heuristics: list[tuple[Heuristic, float]] = []
         self.temperature = temperature
+        self.prepared = False
 
     def register(self, heuristic: Heuristic, weight: float = 1.0):
         self.heuristics.append((heuristic, weight))
         return self
     
     def score_cell(self, board, cell, color, size):
-        for h, _ in self.heuristics:
-            h.prepare(board, color, size)
+        if not self.prepared:
+            for h, _ in self.heuristics:
+                h.prepare(board, color, size)
+            self.prepared = True
         return sum(
             weight * h.score(board, cell, color, size)
             for h, weight in self.heuristics
@@ -193,6 +196,7 @@ class HeuristicEvaluator:
         # Prepare heuristics results, cost according to heuristics
         for h, _ in self.heuristics:
             h.prepare(board, color, size)
+        self.prepared = True
 
         combined = [0.0] * len(empty_cells)
         for h, weight in self.heuristics:
