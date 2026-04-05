@@ -313,7 +313,7 @@ def main():
         HeuristicEvaluator(temperature=0.1)
         .register(MyShortestPath(),  weight=1.0) # 2 pass of BFS
         .register(OppShortestPath(), weight=2.0) # 2 pass of BFS
-        .register(CenterBias(),      weight=0)
+        .register(CenterBias(),      weight=0.1)
     )
     while True:
         try:
