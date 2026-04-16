@@ -1,7 +1,11 @@
+# Team information
+team name: The Warklock
+team members: Yue Wang, Yilin Pan
+
 # instruction
 
 This agent can be run in by the following command
-`python3 gui_main.py --red-subprocess "my_agent.py" --blue-subprocess "my_agent.py"`
+`python3 gui_main.py --red-subprocess "python3 my_agent.py" --blue-subprocess "python3 my_agent.py"`
 
 This agent is composed by several different heuristics and consolidated in one evalator
 
